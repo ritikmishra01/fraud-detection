@@ -3,15 +3,16 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from data_loader import get_cleaned_data
+import os
 
 app = Flask(__name__)
 
 print("🚀 Starting App...")
 
-# Load data
+# Load data from online source
 X_train, X_test, y_train, y_test = get_cleaned_data()
 
-# ✅ Better model for imbalance
+# Model (handles imbalance)
 model = RandomForestClassifier(
     n_estimators=200,
     max_depth=10,
@@ -24,7 +25,7 @@ model.fit(X_train, y_train)
 
 print("✅ Model trained successfully")
 
-# 🔧 Threshold for fraud detection (important)
+# Threshold for fraud detection
 THRESHOLD = 0.3
 
 
@@ -42,13 +43,13 @@ def predict():
 
         df = pd.read_csv(file)
 
-        # Remove unnecessary columns if present
+        # Remove unwanted columns
         df = df.drop(columns=[c for c in ['Time', 'Class'] if c in df.columns], errors='ignore')
 
-        # Ensure correct column order
+        # Match training columns
         df = df[X_train.columns]
 
-        # 🔥 Use probability instead of direct prediction
+        # Predict using probability
         probs = model.predict_proba(df)[:, 1]
         predictions = (probs > THRESHOLD).astype(int)
 
@@ -56,7 +57,7 @@ def predict():
         total = len(predictions)
         normal_count = total - fraud_count
 
-        # 🔥 Evaluate model on test data with same threshold
+        # Evaluate model
         test_probs = model.predict_proba(X_test)[:, 1]
         y_pred = (test_probs > THRESHOLD).astype(int)
 
@@ -83,6 +84,7 @@ def predict():
         return render_template('index.html', prediction_text=f"❌ Error: {e}")
 
 
+# ✅ IMPORTANT FOR RENDER
 if __name__ == "__main__":
-    print("🔥 Server running at http://127.0.0.1:5000")
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
