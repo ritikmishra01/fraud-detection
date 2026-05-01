@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fraud Detection</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: #f4f4f4;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            margin: 100px auto;
+            width: 450px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 15px gray;
+        }
+        button {
+            padding: 12px 25px;
+            background: green;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>💳 Credit Card Fraud Detection</h2>
+
+    <form action="/predict" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" required><br><br>
+        <button type="submit">Upload & Predict</button>
+    </form>
+
+    <h3>{{ prediction_text|safe }}</h3>
+</div>
+
+</body>
+</html>
