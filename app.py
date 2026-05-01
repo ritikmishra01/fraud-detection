@@ -9,7 +9,7 @@ app = Flask(__name__)
 print("🚀 Starting App...")
 
 # Load data
-X_train, X_test, y_train, y_test = get_cleaned_data('creditcard.csv')
+X_train, X_test, y_train, y_test = get_cleaned_data()
 
 # ✅ Better model for imbalance
 model = RandomForestClassifier(
