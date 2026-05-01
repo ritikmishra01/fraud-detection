@@ -5,13 +5,13 @@ from sklearn.model_selection import train_test_split
 def get_cleaned_data():
     df = pd.read_csv('https://storage.googleapis.com/download.tensorflow.org/data/creditcard.csv')
 
-    # 🔥 FORCE BOTH CLASSES
-    fraud = df[df['Class'] == 1]      # all fraud (~492 rows)
+    # ✅ FORCE BOTH CLASSES
+    fraud = df[df['Class'] == 1]  # ~492 rows
     normal = df[df['Class'] == 0].sample(2000, random_state=42)
 
     df = pd.concat([fraud, normal])
 
-    # Shuffle data
+    # Shuffle
     df = df.sample(frac=1, random_state=42)
 
     # Scale Amount
