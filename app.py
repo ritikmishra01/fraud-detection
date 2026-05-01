@@ -1,39 +1,3 @@
-from flask import Flask, render_template, request
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from data_loader import get_cleaned_data
-import os
-
-app = Flask(__name__)
-
-print("🚀 Starting App...")
-
-# Load data from online source
-X_train, X_test, y_train, y_test = get_cleaned_data()
-
-# Model (handles imbalance)
-model = RandomForestClassifier(
-    n_estimators=200,
-    max_depth=10,
-    random_state=42,
-    n_jobs=-1,
-    class_weight='balanced'
-)
-
-model.fit(X_train, y_train)
-
-print("✅ Model trained successfully")
-
-# Threshold for fraud detection
-THRESHOLD = 0.3
-
-
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -49,8 +13,18 @@ def predict():
         # Match training columns
         df = df[X_train.columns]
 
-        # Predict using probability
-        probs = model.predict_proba(df)[:, 1]
+        # 🔥 Predict probabilities
+        probs = model.predict_proba(df)
+
+        # ✅ FIX: handle single-class safely
+        if probs.shape[1] < 2:
+            return render_template(
+                'index.html',
+                prediction_text="❌ Model trained on single class. Fix dataset."
+            )
+
+        probs = probs[:, 1]
+
         predictions = (probs > THRESHOLD).astype(int)
 
         fraud_count = int(predictions.sum())
@@ -58,8 +32,15 @@ def predict():
         normal_count = total - fraud_count
 
         # Evaluate model
-        test_probs = model.predict_proba(X_test)[:, 1]
-        y_pred = (test_probs > THRESHOLD).astype(int)
+        test_probs = model.predict_proba(X_test)
+
+        if test_probs.shape[1] < 2:
+            return render_template(
+                'index.html',
+                prediction_text="❌ Test data also has single class issue."
+            )
+
+        y_pred = (test_probs[:, 1] > THRESHOLD).astype(int)
 
         acc = accuracy_score(y_test, y_pred)
         precision = precision_score(y_test, y_pred, zero_division=0)
@@ -82,9 +63,3 @@ def predict():
 
     except Exception as e:
         return render_template('index.html', prediction_text=f"❌ Error: {e}")
-
-
-# ✅ IMPORTANT FOR RENDER
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
