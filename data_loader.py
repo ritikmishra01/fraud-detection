@@ -3,10 +3,10 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 def get_cleaned_data(file_path):
-    df = pd.read_csv(file_path)
+    df = pd.read_csv('https://storage.googleapis.com/download.tensorflow.org/data/creditcard.csv')
 
     # Take small sample for fast startup (IMPORTANT)
-    df = df.sample(5000)
+    df = df.sample(3000)
 
     # Scale Amount
     scaler = StandardScaler()
